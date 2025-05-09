@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to PDF Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        /* Base Styles & Reset */
+        :root {
+            --primary-color: #f33434;
+            --primary-dark: #f36b22;
+            --secondary-color: #e6a234;
+            --text-color: #333;
+            --text-light: #666;
+            --text-dark: #111;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #f33434;
+            --primary-dark: #f36b22;
+            --secondary-color: #e6a234;
+            --text-color: #f1f1f1;
+            --text-light: #ccc;
+            --text-dark: #e1e1e1;
+            --bg-light: #121212;
+            --bg-white: #1e1e1e;
+            --box-shadow: 0 4px 20px rgba(255, 255, 255, 0.05);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Header */
+        .site-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+        
+        [data-theme="dark"] .site-header {
+            background: rgba(30, 30, 30, 0.95);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .site-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .theme-toggle i {
+            position: absolute;
+            transition: var(--transition);
+            font-size: 1.2rem;
+        }
+        
+        .theme-toggle .fa-sun {
+            opacity: 0;
+            transform: rotate(90deg);
+            color: #ffd700;
+        }
+        
+        [data-theme="dark"] .theme-toggle .fa-moon {
+            opacity: 0;
+            transform: rotate(90deg);
+        }
+        
+        [data-theme="dark"] .theme-toggle .fa-sun {
+            opacity: 1;
+            transform: rotate(0);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 3rem 0;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--bg-white);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            position: relative;
+            padding-bottom: 0.75rem;
+        }
+
+        .card-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        /* File Upload */
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        [data-theme="dark"] .file-upload {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: rgba(243, 52, 52, 0.05);
+        }
+
+        .file-upload.active {
+            border-color: var(--primary-color);
+            background: rgba(243, 52, 52, 0.1);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .file-upload:hover .upload-icon {
+            transform: translateY(-5px);
+        }
+
+        .upload-text {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text p {
+            color: var(--text-light);
+        }
+
+        .file-info {
+            margin-top: 1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-info i {
+            font-size: 1.2rem;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            margin: 1rem 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        [data-theme="dark"] .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-bar:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: progressShine 2s infinite;
+        }
+
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Settings Form */
+        .settings-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--bg-white);
+            color: var(--text-color);
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(243, 52, 52, 0.2);
+        }
+
+        /* Preview Section */
+        .preview-section {
+            display: none;
+        }
+
+        .preview-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .preview-toggle {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .preview-toggle.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .preview-toggle:hover:not(.active) {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .preview-container {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .table-preview {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .table-preview table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-preview th,
+        .table-preview td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .table-preview th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        .table-preview tr:nth-child(even) {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        [data-theme="dark"] .table-preview tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .pdf-preview {
+            display: none;
+            padding: 1rem;
+            background: white;
+            border-radius: var(--border-radius);
+        }
+
+        .pdf-thumbnails {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .pdf-thumbnail {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .pdf-thumbnail:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .pdf-thumbnail img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .pdf-thumbnail-label {
+            padding: 0.5rem;
+            background: #f8f9fa;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(243, 52, 52, 0.1);
+        }
+
+        .btn i {
+            font-size: 1.1rem;
+        }
+
+        /* Messages */
+        .message {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            display: none;
+        }
+
+        .message i {
+            font-size: 1.2rem;
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+        }
+
+        .success-message {
+            background: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .settings-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-btns {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .file-upload {
+                padding: 2rem 1rem;
+            }
+            
+            .upload-icon {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(243, 52, 52, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(243, 52, 52, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(243, 52, 52, 0);
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <header class="site-header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-file-excel"></i>
+                <span>Excel to PDF</span>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+                <i class="fas fa-sun"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="card" data-aos="fade-up">
+                <h2 class="card-title">Upload Excel File</h2>
+                <div class="file-upload" id="dropArea">
+                    <input type="file" id="fileInput" class="file-input" accept=".xlsx, .xls" />
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <h3>Drag & Drop Excel File</h3>
+                        <p>or click to browse files</p>
+                    </div>
+                    <div class="file-info" id="fileInfo">
+                        <i class="fas fa-file-excel"></i>
+                        <span>No file selected</span>
+                    </div>
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+                <div class="error-message message" id="errorMessage">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText"></span>
+                </div>
+                <div class="success-message message" id="successMessage">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="successText"></span>
+                </div>
+            </div>
+
+            <div class="card" id="settingsCard" style="display: none;" data-aos="fade-up">
+                <h2 class="card-title">PDF Settings</h2>
+                <form class="settings-form" id="settingsForm">
+                    <div class="form-group">
+                        <label for="pageSize">Page Size</label>
+                        <select id="pageSize">
+                            <option value="a4">A4</option>
+                            <option value="letter">Letter</option>
+                            <option value="legal">Legal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="orientation">Orientation</label>
+                        <select id="orientation">
+                            <option value="portrait">Portrait</option>
+                            <option value="landscape">Landscape</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="margin">Margin (mm)</label>
+                        <input type="number" id="margin" value="10" min="0" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="fontSize">Font Size</label>
+                        <input type="number" id="fontSize" value="10" min="6" max="20">
+                    </div>
+                </form>
+            </div>
+
+            <div class="card preview-section" id="previewCard" style="display: none;" data-aos="fade-up">
+                <h2 class="card-title">Preview</h2>
+                <div class="preview-options">
+                    <div class="preview-toggle active" data-preview="table">Table View</div>
+                    <div class="preview-toggle" data-preview="pdf">PDF Preview</div>
+                </div>
+                <div class="preview-container">
+                    <div class="table-preview" id="tablePreview">
+                        <!-- Table preview will be inserted here -->
+                    </div>
+                    <div class="pdf-preview" id="pdfPreview">
+                        <div class="pdf-thumbnails" id="pdfThumbnails">
+                            <!-- PDF thumbnails will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-btns" data-aos="fade-up">
+                <button class="btn" id="convertBtn" disabled>
+                    <i class="fas fa-file-pdf"></i> Convert to PDF
+                </button>
+                <button class="btn btn-secondary" id="resetBtn">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+                <button class="btn" id="downloadBtn" disabled>
+                    <i class="fas fa-download"></i> Download PDF
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS (Animate On Scroll)
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+
+        // DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const dropArea = document.getElementById('dropArea');
+        const fileInfo = document.getElementById('fileInfo');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const successMessage = document.getElementById('successMessage');
+        const successText = document.getElementById('successText');
+        const themeToggle = document.getElementById('themeToggle');
+        const settingsCard = document.getElementById('settingsCard');
+        const previewCard = document.getElementById('previewCard');
+        const convertBtn = document.getElementById('convertBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const tablePreview = document.getElementById('tablePreview');
+        const pdfPreview = document.getElementById('pdfPreview');
+        const pdfThumbnails = document.getElementById('pdfThumbnails');
+        const previewToggles = document.querySelectorAll('.preview-toggle');
+
+        // Variables
+        let workbook = null;
+        let pdfDoc = null;
+        let selectedSheet = null;
+        let excelData = [];
+        let pdfBlob = null;
+
+        // Event listeners
+        dropArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+        convertBtn.addEventListener('click', convertToPDF);
+        downloadBtn.addEventListener('click', downloadPDF);
+        resetBtn.addEventListener('click', resetConverter);
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Drag and drop events
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('active');
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('active');
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('active');
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect({ target: fileInput });
+            }
+        });
+
+        // Preview toggle events
+        previewToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                previewToggles.forEach(t => t.classList.remove('active'));
+                toggle.classList.add('active');
+                
+                if (toggle.dataset.preview === 'table') {
+                    tablePreview.style.display = 'block';
+                    pdfPreview.style.display = 'none';
+                } else {
+                    tablePreview.style.display = 'none';
+                    pdfPreview.style.display = 'block';
+                }
+            });
+        });
+
+        // Functions
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            
+            if (!file) return;
+            
+            // Reset previous state
+            resetMessages();
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            dropArea.classList.add('active');
+            
+            // Check file type
+            if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                showError('Please select a valid Excel file (.xlsx or .xls)');
+                dropArea.classList.remove('active');
+                progressContainer.style.display = 'none';
+                return;
+            }
+            
+            // Check file size (limit to 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size exceeds 10MB limit');
+                dropArea.classList.remove('active');
+                progressContainer.style.display = 'none';
+                return;
+            }
+            
+            fileInfo.innerHTML = `<i class="fas fa-file-excel"></i><span>${file.name}</span>`;
+            
+            // Update progress
+            progressBar.style.width = '30%';
+            
+            // Read the file
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Process the first sheet by default
+                    selectedSheet = workbook.SheetNames[0];
+                    excelData = XLSX.utils.sheet_to_json(workbook.Sheets[selectedSheet], { header: 1 });
+                    
+                    // Update progress
+                    progressBar.style.width = '70%';
+                    
+                    // Display preview
+                    displayPreview(excelData);
+                    
+                    // Show settings and preview cards
+                    settingsCard.style.display = 'block';
+                    previewCard.style.display = 'block';
+                    
+                    // Enable convert button
+                    convertBtn.disabled = false;
+                    downloadBtn.disabled = true;
+                    
+                    // Complete progress
+                    progressBar.style.width = '100%';
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        dropArea.classList.remove('active');
+                    }, 500);
+                    
+                    showSuccess('File loaded successfully');
+                    
+                    // Scroll to preview section
+                    setTimeout(() => {
+                        previewCard.scrollIntoView({ behavior: 'smooth' });
+                    }, 300);
+                } catch (error) {
+                    showError('Error reading Excel file: ' + error.message);
+                    console.error(error);
+                    progressContainer.style.display = 'none';
+                    dropArea.classList.remove('active');
+                }
+            };
+            
+            reader.onerror = function() {
+                showError('Error reading file');
+                progressContainer.style.display = 'none';
+                dropArea.classList.remove('active');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function displayPreview(data) {
+            if (!data || data.length === 0) {
+                tablePreview.innerHTML = '<p>No data to display</p>';
+                return;
+            }
+            
+            // Create table
+            let table = '<table><thead><tr>';
+            
+            // Add headers (first row)
+            for (let i = 0; i < data[0].length; i++) {
+                table += `<th>${data[0][i] || ''}</th>`;
+            }
+            table += '</tr></thead><tbody>';
+            
+            // Add rows
+            for (let i = 1; i < Math.min(data.length, 100); i++) { // Limit to 100 rows for preview
+                table += '<tr>';
+                for (let j = 0; j < data[i].length; j++) {
+                    table += `<td>${data[i][j] || ''}</td>`;
+                }
+                table += '</tr>';
+            }
+            table += '</tbody></table>';
+            
+            if (data.length > 100) {
+                table += `<p class="text-muted">Showing first 100 rows of ${data.length}</p>`;
+            }
+            
+            tablePreview.innerHTML = table;
+        }
+
+        function convertToPDF() {
+            if (!excelData || excelData.length === 0) {
+                showError('No data to convert');
+                return;
+            }
+            
+            try {
+                // Show progress
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                
+                // Get settings
+                const pageSize = document.getElementById('pageSize').value;
+                const orientation = document.getElementById('orientation').value;
+                const margin = parseInt(document.getElementById('margin').value);
+                const fontSize = parseInt(document.getElementById('fontSize').value);
+                
+                // Initialize PDF
+                const doc = new jsPDF({
+                    orientation: orientation,
+                    unit: 'mm',
+                    format: pageSize
+                });
+                
+                // Set font
+                doc.setFont('helvetica');
+                doc.setFontSize(fontSize);
+                
+                // Prepare data for autotable
+                const headers = excelData[0].map(header => header || '');
+                const rows = excelData.slice(1).map(row => {
+                    return row.map(cell => {
+                        // Convert dates to readable format
+                        if (cell instanceof Date) {
+                            return cell.toLocaleDateString();
+                        }
+                        return cell || '';
+                    });
+                });
+                
+                // Update progress
+                progressBar.style.width = '30%';
+                
+                // Calculate table width based on orientation
+                const pageWidth = orientation === 'portrait' ? 210 - margin * 2 : 297 - margin * 2;
+                
+                // Add table to PDF
+                doc.autoTable({
+                    head: [headers],
+                    body: rows,
+                    startY: margin,
+                    margin: { top: margin, right: margin, bottom: margin, left: margin },
+                    styles: { 
+                        fontSize: fontSize,
+                        cellPadding: 4,
+                        overflow: 'linebreak'
+                    },
+                    columnStyles: {
+                        // Apply styles to all columns
+                        0: { cellWidth: 'auto' },
+                        1: { cellWidth: 'auto' },
+                        2: { cellWidth: 'auto' },
+                        3: { cellWidth: 'auto' },
+                        4: { cellWidth: 'auto' },
+                        5: { cellWidth: 'auto' },
+                        6: { cellWidth: 'auto' },
+                        7: { cellWidth: 'auto' },
+                        8: { cellWidth: 'auto' },
+                        9: { cellWidth: 'auto' }
+                    },
+                    didParseCell: function(data) {
+                        // Update progress during cell parsing
+                        const progress = 30 + Math.floor(70 * data.row.index / rows.length);
+                        progressBar.style.width = `${progress}%`;
+                        
+                        // Handle long text by line breaking
+                        if (data.cell.raw && typeof data.cell.raw === 'string' && data.cell.raw.length > 100) {
+                            data.cell.styles.overflow = 'linebreak';
+                        }
+                    },
+                    willDrawPage: function(data) {
+                        // Add page numbers
+                        const pageCount = doc.internal.getNumberOfPages();
+                        if (pageCount > 1 && data.pageNumber === pageCount) {
+                            doc.setFontSize(10);
+                            doc.setTextColor(150);
+                            doc.text(
+                                `Page ${data.pageNumber} of ${pageCount}`,
+                                doc.internal.pageSize.getWidth() - margin - 20,
+                                doc.internal.pageSize.getHeight() - 10
+                            );
+                        }
+                    }
+                });
+                
+                // Save the PDF as blob
+                pdfBlob = doc.output('blob');
+                pdfDoc = doc;
+                
+                // Generate PDF preview thumbnails
+                generatePdfThumbnails(pdfBlob);
+                
+                // Complete progress
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, 500);
+                
+                // Enable download button
+                downloadBtn.disabled = false;
+                
+                showSuccess('PDF generated successfully');
+                
+                // Scroll to preview section
+                setTimeout(() => {
+                    previewCard.scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+            } catch (error) {
+                showError('Error generating PDF: ' + error.message);
+                console.error(error);
+                progressContainer.style.display = 'none';
+            }
+        }
+
+        function generatePdfThumbnails(pdfBlob) {
+            // In a real implementation, you would use PDF.js to generate thumbnails
+            // This is a simplified placeholder implementation
+            
+            pdfThumbnails.innerHTML = '';
+            
+            // Create mock thumbnails (in a real app, you'd generate actual PDF previews)
+            const pageCount = pdfDoc.internal.getNumberOfPages();
+            
+            for (let i = 1; i <= pageCount; i++) {
+                const thumbnail = document.createElement('div');
+                thumbnail.className = 'pdf-thumbnail';
+                thumbnail.innerHTML = `
+                    <div class="pdf-thumbnail-label">Page ${i}</div>
+                `;
+                pdfThumbnails.appendChild(thumbnail);
+            }
+        }
+
+        function downloadPDF() {
+            if (!pdfBlob) {
+                showError('No PDF to download');
+                return;
+            }
+            
+            const fileName = fileInput.files[0].name.replace(/\.[^/.]+$/, '') + '.pdf';
+            const url = URL.createObjectURL(pdfBlob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showSuccess('PDF download started');
+        }
+
+        function resetConverter() {
+            // Reset file input
+            fileInput.value = '';
+            fileInfo.innerHTML = '<i class="fas fa-file-excel"></i><span>No file selected</span>';
+            
+            // Reset variables
+            workbook = null;
+            pdfDoc = null;
+            selectedSheet = null;
+            excelData = [];
+            pdfBlob = null;
+            
+            // Reset UI
+            tablePreview.innerHTML = '';
+            pdfThumbnails.innerHTML = '';
+            settingsCard.style.display = 'none';
+            previewCard.style.display = 'none';
+            convertBtn.disabled = true;
+            downloadBtn.disabled = true;
+            progressContainer.style.display = 'none';
+            dropArea.classList.remove('active');
+            
+            // Reset preview to table view
+            previewToggles.forEach((toggle, index) => {
+                toggle.classList.toggle('active', index === 0);
+            });
+            tablePreview.style.display = 'block';
+            pdfPreview.style.display = 'none';
+            
+            // Reset messages
+            resetMessages();
+            
+            showSuccess('Converter has been reset');
+        }
+
+        function resetMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'flex';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successText.textContent = message;
+            successMessage.style.display = 'flex';
+            errorMessage.style.display = 'none';
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            
+            // Save preference to localStorage
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.setAttribute('data-theme', savedTheme);
+    </script>
+</body>
+</html>

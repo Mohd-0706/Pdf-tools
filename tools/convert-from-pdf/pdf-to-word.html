@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Word Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s;
+        }
+        body.dark {
+            background-color: #333;
+            color: white;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background-color: #007bff;
+            color: white;
+        }
+        .container {
+            padding: 20px;
+        }
+        #previewContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            max-width: 100%;
+        }
+        .page {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .dark-mode-toggle {
+            cursor: pointer;
+        }
+        #spinner {
+            display: none;
+            text-align: center;
+        }
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        #metadata {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>PDF to Word Converter</h1>
+    <div class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</div>
+</header>
+
+<div class="container">
+    <input type="file" id="fileInput" accept="application/pdf" onchange="handleFileUpload(event)">
+    <label for="fileInput" class="btn">Upload PDF</label>
+    <button class="btn" onclick="convertAndPreview()">Convert & Preview</button>
+    <button class="btn" onclick="downloadWord()">Download Word</button>
+    <div id="spinner">Loading...</div>
+    <div id="previewContainer"></div>
+    <div id="metadata"></div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.3.0/docx.min.js"></script>
+<script>
+    let pdfDoc = null;
+    const previewContainer = document.getElementById('previewContainer');
+    const spinner = document.getElementById('spinner');
+    const toast = document.getElementById('toast');
+    const metadataDiv = document.getElementById('metadata');
+    let totalPages = 0;
+
+    function showToast(message) {
+        toast.innerText = message;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    }
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file || !file.name.endsWith('.pdf')) {
+            showToast('Please upload a valid PDF file.');
+            return;
+        }
+        const fileReader = new FileReader();
+        fileReader.onload = function() {
+            const typedarray = new Uint8Array(this.result);
+            pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                pdfDoc = pdf;
+                totalPages = pdf.numPages;
+                displayMetadata(file);
+                renderPages();
+            }).catch(err => {
+                showToast('Error loading PDF: ' + err.message);
+            });
+        };
+        fileReader.readAsArrayBuffer(file);
+    }
+
+    function displayMetadata(file) {
+        metadataDiv.innerHTML = `<strong>File Name:</strong> ${file.name}<br>
+                                 <strong>File Size:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+                                 <strong>Page Count:</strong> ${totalPages}`;
+    }
+
+    async function renderPages() {
+        previewContainer.innerHTML = '';
+        spinner.style.display = 'block';
+        for (let i = 1; i <= totalPages; i++) {
+            const page = await pdfDoc.getPage(i);
+            const viewport = page.getViewport({ scale: 1 });
+            const canvas = document.createElement('canvas');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            const context = canvas.getContext('2d');
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+            const textContent = await page.getTextContent();
+            const textItems = textContent.items.map(item => item.str).join(' ');
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'page';
+            pageDiv.innerHTML = `<h3>Page ${i} of ${totalPages}</h3>`;
+            pageDiv.appendChild(canvas);
+            pageDiv.innerHTML += `<p>${textItems}</p>`;
+            previewContainer.appendChild(pageDiv);
+        }
+        spinner.style.display = 'none';
+    }
+
+    function convertToDocx() {
+        const doc = new docx.Document();
+        for (let i = 0; i < totalPages; i++) {
+            const pageDiv = previewContainer.children[i];
+            const text = pageDiv.querySelector('p').innerText;
+            doc.addSection({
+                children: [
+                    new docx.Paragraph(text),
+                    new docx.Paragraph().addRun(new docx.TextRun(`Page ${i + 1} of ${totalPages}`))
+                ]
+            });
+        }
+        return doc;
+    }
+
+    function downloadWord() {
+        if (!pdfDoc) {
+            showToast('No PDF loaded.');
+            return;
+        }
+        const doc = convertToDocx();
+        docx.Packer.toBlob(doc).then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'converted.docx';
+            document.body.appendChild(a); // Append to body
+            a.click(); // Trigger download
+            document.body.removeChild(a); // Remove from body
+            URL.revokeObjectURL(url); // Free up memory
+            showToast('Download started.');
+        }).catch(err => {
+            showToast('Error generating document: ' + err.message);
+        });
+    }
+
+    window.onload = function() {
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        if (darkMode) {
+            document.body.classList.add('dark');
+        }
+    };
+
+    function convertAndPreview() {
+        if (!pdfDoc) {
+            showToast('No PDF loaded.');
+            return;
+        }
+        renderPages();
+    }
+</script>
+</body>
+</html>

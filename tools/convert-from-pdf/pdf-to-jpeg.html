@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PDF to Images Converter</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: #fff;
+      transition: background 0.4s, color 0.4s;
+    }
+    .light-mode {
+      background: #f5f5f5;
+      color: #111;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: fadeInDown 0.8s ease;
+    }
+    .upload-box {
+      border: 2px dashed #aaa;
+      padding: 2rem;
+      text-align: center;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      transition: border 0.3s;
+      cursor: pointer;
+      animation: fadeIn 1s ease;
+    }
+    .upload-box:hover {
+      border-color: #fff;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    #preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+    .canvas-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeInUp 1s ease;
+    }
+    canvas {
+      max-width: 200px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    canvas:hover {
+      transform: scale(1.05);
+    }
+    .btn {
+      margin-top: 0.5rem;
+      padding: 6px 12px;
+      border: none;
+      background: linear-gradient(to right, #0072ff, #00c6ff);
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #00c6ff;
+    }
+    .controls {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: #fff;
+      color: #111;
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 999;
+    }
+    .light-mode .upload-box {
+      background: #ffffffcc;
+      border-color: #888;
+    }
+    .light-mode .theme-toggle {
+      background: #222;
+      color: #fff;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="theme-toggle" onclick="toggleTheme()">🌓 Theme</div>
+  <h1>PDF to Images Converter</h1>
+
+  <div class="upload-box" onclick="document.getElementById('fileInput').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+    <p>Click or drag PDF file here to convert</p>
+    <input type="file" id="fileInput" accept="application/pdf" />
+  </div>
+
+  <div id="preview"></div>
+
+  <div class="controls">
+    <button class="btn" onclick="downloadZip()">📦 Download All as ZIP</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    let images = [];
+
+    fileInput.addEventListener('change', e => handlePDF(e.target.files[0]));
+
+    function handleDrop(e) {
+      e.preventDefault();
+      if (e.dataTransfer.files.length) {
+        handlePDF(e.dataTransfer.files[0]);
+      }
+    }
+
+    async function handlePDF(file) {
+      preview.innerHTML = '';
+      images = [];
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const typedArray = new Uint8Array(reader.result);
+        const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 2 });
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          const dataUrl = canvas.toDataURL('image/jpeg');
+          const filename = `page-${i}.jpg`;
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'canvas-wrapper';
+
+          canvas.title = 'Click to remove this image';
+          canvas.addEventListener('click', () => {
+            wrapper.remove();
+            images = images.filter(img => img.name !== filename);
+          });
+
+          const dlBtn = document.createElement('button');
+          dlBtn.className = 'btn';
+          dlBtn.textContent = 'Download';
+          dlBtn.onclick = () => {
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = filename;
+            a.click();
+          };
+
+          wrapper.appendChild(canvas);
+          wrapper.appendChild(dlBtn);
+          preview.appendChild(wrapper);
+          images.push({ name: filename, data: dataUrl });
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function downloadZip() {
+      if (!images.length) return alert("No images to download.");
+      const zip = new JSZip();
+      images.forEach(img => {
+        zip.file(img.name, img.data.split(',')[1], { base64: true });
+      });
+      zip.generateAsync({ type: 'blob' }).then(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `pdf-images-${Date.now()}.zip`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light-mode');
+    }
+  </script>
+</body>
+</html>
