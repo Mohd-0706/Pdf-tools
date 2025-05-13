@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Splitter</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/downloadjs@1.4.7"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        /* Base Styles & Variables */
+        :root {
+            --primary-color: #8a2be2;
+            /* Purple */
+            --primary-dark: #7b1fa2;
+            --primary-light: #e1bee7;
+            --secondary-color: #ff7f50;
+            /* Orange */
+            --accent-color: #32cd32;
+            /* Green */
+            --success-color: #4ade80;
+            --warning-color: #f59e0b;
+            --danger-color: #f43f5e;
+            --dark-color: #1e293b;
+            --light-color: #f8f8f8;
+            --gray-color: #64748b;
+            --gray-light: #e2e8f0;
+            --text-color: #1e293b;
+            --text-light: #64748b;
+            --text-dark: #0f172a;
+            --text-white: #ffffff;
+            --bg-light: #f8f8f8;
+            --bg-white: #ffffff;
+            --bg-dark: #0f172a;
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --border-radius-lg: 16px;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --transition: all 0.3s ease;
+            --transition-fast: all 0.15s ease;
+            --transition-slow: all 0.5s ease;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #9c5eff;
+            --primary-dark: #7b1fa2;
+            --text-color: #e2e8f0;
+            --text-light: #94a3b8;
+            --text-dark: #f8fafc;
+            --bg-light: #0f172a;
+            --bg-white: #1e293b;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --border-color: #334155;
+            --gray-light: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Header Styles */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        [data-theme="dark"] .site-header {
+            background-color: rgba(15, 23, 42, 0.95);
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .theme-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-light);
+            transition: var(--transition);
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider i {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: white;
+            transition: var(--transition);
+        }
+
+        .slider i.fa-moon {
+            left: 8px;
+            opacity: 0;
+        }
+
+        [data-theme="dark"] .slider i.fa-moon {
+            opacity: 1;
+        }
+
+        .slider i.fa-sun {
+            right: 8px;
+            opacity: 1;
+        }
+
+        [data-theme="dark"] .slider i.fa-sun {
+            opacity: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 3rem 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: var(--primary-color);
+            position: relative;
+            font-weight: 600;
+        }
+
+        h1:after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: var(--primary-color);
+            margin: 1rem auto 0;
+            border-radius: 2px;
+        }
+
+        /* Upload Container */
+        .upload-container {
+            border: 2px dashed var(--border-color);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius);
+            background: var(--bg-white);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-container:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .upload-container i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .upload-container h2 {
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .upload-container p {
+            color: var(--text-light);
+        }
+
+        #pdfInput {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* Status Message */
+        .status {
+            margin: 1.5rem 0;
+            font-weight: 500;
+            text-align: center;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            background: rgba(138, 43, 226, 0.1);
+            color: var(--primary-color);
+            transition: var(--transition);
+        }
+
+        /* Controls Section */
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: none;
+            outline: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn:disabled {
+            background-color: var(--gray-light);
+            color: var(--text-light);
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .select-options {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 1rem;
+        }
+
+        .select-options label {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .select-options input {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            background: var(--bg-white);
+            color: var(--text-color);
+            text-align: center;
+            width: 60px;
+            transition: var(--transition-fast);
+        }
+
+        .select-options input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.2);
+            outline: none;
+        }
+
+        /* PDF Preview Section */
+        #pdfPreview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        /* Custom scrollbar */
+        #pdfPreview::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        #pdfPreview::-webkit-scrollbar-track {
+            background: var(--bg-light);
+            border-radius: 4px;
+        }
+
+        #pdfPreview::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        #pdfPreview::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        .page-container {
+            position: relative;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background: var(--bg-white);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .page-container:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .page-container.selected {
+            border-color: var(--primary-color);
+            background: rgba(138, 43, 226, 0.05);
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .page-number {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .page-checkbox {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            z-index: 2;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .page-container:hover .page-checkbox,
+        .page-checkbox:checked {
+            opacity: 1;
+        }
+
+        .page-checkbox-custom {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary-color);
+            border-radius: 4px;
+            background: var(--bg-white);
+            transition: var(--transition);
+            pointer-events: none;
+        }
+
+        .page-checkbox:checked+.page-checkbox-custom {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .page-checkbox-custom:after {
+            content: '';
+            position: absolute;
+            display: none;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .page-checkbox:checked+.page-checkbox-custom:after {
+            display: block;
+        }
+
+        .canvas-container {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: contain;
+            transition: var(--transition);
+        }
+
+        /* Progress Indicator */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(138, 43, 226, 0.1);
+            border-radius: 3px;
+            margin: 1rem 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: var(--primary-color);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(138, 43, 226, 0.1);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            #pdfPreview {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .select-options {
+                margin: 0.5rem 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            #pdfPreview {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+                width: 100%;
+            }
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loading-spinner {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .spinner-circle {
+            width: 15px;
+            height: 15px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            animation: bounce 1s infinite ease-in-out;
+        }
+
+        .spinner-circle:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .spinner-circle:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .spinner-circle:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <div class="loading-spinner">
+            <div class="spinner-circle"></div>
+            <div class="spinner-circle"></div>
+            <div class="spinner-circle"></div>
+        </div>
+    </div>
+
+
+    <header class="site-header">
+        <div class="container header-container">
+            <div class="logo">
+                <i class="fas fa-file-pdf"></i>
+                <span>Organize PDF Tool</span>
+            </div>
+            <label class="theme-toggle">
+        <input type="checkbox" id="themeToggle">
+        <!--<span class="slider">
+          <i class="fas fa-moon"></i>
+          <i class="fas fa-sun"></i>
+        </span>-->
+      </label>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <h1 data-aos="fade-down">PDF Splitter with Preview</h1>
+
+            <div class="upload-container" data-aos="fade-up" data-aos-delay="100">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h2>Upload PDF File</h2>
+                <p>Click to browse or drag and drop file here</p>
+                <input type="file" id="pdfInput" accept=".pdf">
+            </div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div class="spinner" id="spinner"></div>
+
+            <div class="status" id="status">Please upload a PDF file</div>
+
+            <div class="controls" id="controls" style="display: none;" data-aos="fade-up" data-aos-delay="200">
+                <button class="btn btn-primary" id="splitSelectedBtn">Split Selected Pages</button>
+                <button class="btn btn-primary" id="splitRangeBtn">Split Page Range</button>
+                <button class="btn btn-outline" id="selectAllBtn">Select All</button>
+                <button class="btn btn-outline" id="clearSelectionBtn">Clear Selection</button>
+                <button class="btn btn-outline" id="resetBtn">Reset</button>
+
+                <div class="select-options">
+                    <label for="startPage">From:</label>
+                    <input type="number" id="startPage" min="1" value="1">
+
+                    <label for="endPage">To:</label>
+                    <input type="number" id="endPage" min="1" value="1">
+                </div>
+            </div>
+
+            <div id="pdfPreview"></div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animation library
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Global variables
+        let pdfDoc = null;
+        let pdfJsDoc = null;
+        let totalPages = 0;
+        let selectedPages = new Set();
+
+        // DOM elements
+        const pdfInput = document.getElementById('pdfInput');
+        const statusDiv = document.getElementById('status');
+        const pdfPreview = document.getElementById('pdfPreview');
+        const controlsDiv = document.getElementById('controls');
+        const splitSelectedBtn = document.getElementById('splitSelectedBtn');
+        const splitRangeBtn = document.getElementById('splitRangeBtn');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const startPage = document.getElementById('startPage');
+        const endPage = document.getElementById('endPage');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const spinner = document.getElementById('spinner');
+        const themeToggle = document.getElementById('themeToggle');
+        const loadingScreen = document.querySelector('.loading-screen');
+
+        // Initialize PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+        // Theme toggle functionality
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        }
+
+        // Hide loading screen after 1.5 seconds
+        setTimeout(() => {
+            loadingScreen.style.opacity = '0';
+            loadingScreen.style.visibility = 'hidden';
+        }, 1100);
+
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+        if (savedTheme === 'dark') {
+            themeToggle.checked = true;
+        }
+
+        themeToggle.addEventListener('change', toggleTheme);
+
+        // Handle file selection
+        pdfInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                await loadPdf(file);
+            }
+        });
+
+        // Handle drag and drop
+        const container = document.querySelector('.upload-container');
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            container.style.borderColor = 'var(--primary-color)';
+            container.style.backgroundColor = 'rgba(138, 43, 226, 0.05)';
+        });
+
+        container.addEventListener('dragleave', () => {
+            container.style.borderColor = 'var(--border-color)';
+            container.style.backgroundColor = 'var(--bg-white)';
+        });
+
+        container.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            container.style.borderColor = 'var(--border-color)';
+            container.style.backgroundColor = 'var(--bg-white)';
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/pdf') {
+                pdfInput.files = e.dataTransfer.files;
+                await loadPdf(file);
+            } else {
+                statusDiv.textContent = 'Please drop a PDF file.';
+                statusDiv.style.backgroundColor = 'rgba(244, 63, 94, 0.1)';
+                statusDiv.style.color = 'var(--danger-color)';
+            }
+        });
+
+        // Load PDF function
+        async function loadPdf(file) {
+            statusDiv.textContent = 'Loading PDF...';
+            statusDiv.style.backgroundColor = 'rgba(138, 43, 226, 0.1)';
+            statusDiv.style.color = 'var(--primary-color)';
+            pdfPreview.innerHTML = '';
+            selectedPages.clear();
+            controlsDiv.style.display = 'none';
+            progressContainer.style.display = 'block';
+            spinner.style.display = 'block';
+
+            try {
+                // Simulate progress for better UX
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 10;
+                    if (progress >= 90) clearInterval(progressInterval);
+                    progressBar.style.width = `${Math.min(progress, 90)}%`;
+                }, 200);
+
+                // Load with pdf-lib for splitting
+                const arrayBuffer = await file.arrayBuffer();
+                pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+
+                // Load with pdf.js for preview
+                const loadingTask = pdfjsLib.getDocument(arrayBuffer);
+                pdfJsDoc = await loadingTask.promise;
+                totalPages = pdfJsDoc.numPages;
+
+                // Update range inputs
+                startPage.max = totalPages;
+                endPage.max = totalPages;
+                endPage.value = totalPages;
+
+                // Complete progress
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    spinner.style.display = 'none';
+                }, 500);
+
+                // Show controls
+                controlsDiv.style.display = 'flex';
+
+                // Render page thumbnails
+                statusDiv.textContent = `Rendering ${totalPages} pages...`;
+                await renderThumbnails();
+
+                statusDiv.textContent = `PDF loaded successfully. Total pages: ${totalPages}`;
+                statusDiv.style.backgroundColor = 'rgba(74, 222, 128, 0.1)';
+                statusDiv.style.color = 'var(--success-color)';
+            } catch (error) {
+                console.error(error);
+                statusDiv.textContent = 'Error loading PDF: ' + error.message;
+                statusDiv.style.backgroundColor = 'rgba(244, 63, 94, 0.1)';
+                statusDiv.style.color = 'var(--danger-color)';
+                progressContainer.style.display = 'none';
+                spinner.style.display = 'none';
+            }
+        }
+
+        // Render PDF page thumbnails
+        async function renderThumbnails() {
+            for (let i = 1; i <= totalPages; i++) {
+                try {
+                    const page = await pdfJsDoc.getPage(i);
+                    const viewport = page.getViewport({ scale: 0.5 });
+
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+
+                    const pageContainer = document.createElement('div');
+                    pageContainer.className = 'page-container';
+                    pageContainer.dataset.pageNumber = i;
+
+                    const pageNumber = document.createElement('div');
+                    pageNumber.className = 'page-number';
+                    pageNumber.textContent = i;
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'page-checkbox';
+                    checkbox.dataset.pageNumber = i;
+                    checkbox.addEventListener('change', togglePageSelection);
+
+                    const checkboxCustom = document.createElement('span');
+                    checkboxCustom.className = 'page-checkbox-custom';
+
+                    const canvasContainer = document.createElement('div');
+                    canvasContainer.className = 'canvas-container';
+
+                    const thumbnail = document.createElement('img');
+                    thumbnail.className = 'thumbnail';
+                    thumbnail.src = canvas.toDataURL();
+                    thumbnail.alt = `Page ${i} thumbnail`;
+                    thumbnail.addEventListener('click', () => {
+                        checkbox.checked = !checkbox.checked;
+                        togglePageSelection({ target: checkbox });
+                    });
+
+                    canvasContainer.appendChild(thumbnail);
+                    pageContainer.appendChild(pageNumber);
+                    pageContainer.appendChild(checkbox);
+                    pageContainer.appendChild(checkboxCustom);
+                    pageContainer.appendChild(canvasContainer);
+                    pdfPreview.appendChild(pageContainer);
+                } catch (error) {
+                    console.error(`Error rendering page ${i}:`, error);
+                }
+            }
+        }
+
+        // Toggle page selection
+        function togglePageSelection(e) {
+            const pageNum = parseInt(e.target.dataset.pageNumber);
+            const pageContainer = document.querySelector(`.page-container[data-page-number="${pageNum}"]`);
+
+            if (e.target.checked) {
+                selectedPages.add(pageNum);
+                pageContainer.classList.add('selected');
+            } else {
+                selectedPages.delete(pageNum);
+                pageContainer.classList.remove('selected');
+            }
+        }
+
+        // Select all pages
+        selectAllBtn.addEventListener('click', () => {
+            selectedPages.clear();
+            const checkboxes = document.querySelectorAll('.page-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                const pageNum = parseInt(checkbox.dataset.pageNumber);
+                selectedPages.add(pageNum);
+                document.querySelector(`.page-container[data-page-number="${pageNum}"]`).classList.add('selected');
+            });
+        });
+
+        // Clear selection
+        clearSelectionBtn.addEventListener('click', () => {
+            selectedPages.clear();
+            const checkboxes = document.querySelectorAll('.page-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                const pageNum = parseInt(checkbox.dataset.pageNumber);
+                document.querySelector(`.page-container[data-page-number="${pageNum}"]`).classList.remove('selected');
+            });
+        });
+
+        // Reset everything
+        resetBtn.addEventListener('click', () => {
+            pdfPreview.innerHTML = '';
+            selectedPages.clear();
+            controlsDiv.style.display = 'none';
+            statusDiv.textContent = 'Please upload a PDF file';
+            statusDiv.style.backgroundColor = 'rgba(138, 43, 226, 0.1)';
+            statusDiv.style.color = 'var(--primary-color)';
+            pdfInput.value = '';
+            pdfDoc = null;
+            pdfJsDoc = null;
+            totalPages = 0;
+        });
+
+        // Split selected pages
+        splitSelectedBtn.addEventListener('click', async () => {
+            if (selectedPages.size === 0) {
+                statusDiv.textContent = 'Please select at least one page.';
+                statusDiv.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+                statusDiv.style.color = 'var(--warning-color)';
+                return;
+            }
+
+            const sortedPages = Array.from(selectedPages).sort((a, b) => a - b);
+            await splitPdf(sortedPages, `selected_pages_${sortedPages.join('_')}.pdf`);
+        });
+
+        // Split page range
+        splitRangeBtn.addEventListener('click', async () => {
+            const start = parseInt(startPage.value);
+            const end = parseInt(endPage.value);
+
+            if (start > end) {
+                statusDiv.textContent = 'Start page cannot be greater than end page.';
+                statusDiv.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+                statusDiv.style.color = 'var(--warning-color)';
+                return;
+            }
+
+            if (start < 1 || end > totalPages) {
+                statusDiv.textContent = `Page range must be between 1 and ${totalPages}.`;
+                statusDiv.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+                statusDiv.style.color = 'var(--warning-color)';
+                return;
+            }
+
+            const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+            await splitPdf(pages, `pages_${start}_to_${end}.pdf`);
+        });
+
+        // Core splitting function
+        async function splitPdf(pages, fileName) {
+            statusDiv.textContent = `Creating new PDF with pages: ${pages.join(', ')}...`;
+            statusDiv.style.backgroundColor = 'rgba(138, 43, 226, 0.1)';
+            statusDiv.style.color = 'var(--primary-color)';
+            spinner.style.display = 'block';
+
+            try {
+                // Create a new PDF
+                const newPdf = await PDFLib.PDFDocument.create();
+
+                // Copy selected pages from the original PDF
+                // Note: pdf-lib uses 0-based indexing for pages
+                const copiedPages = await newPdf.copyPages(pdfDoc, pages.map(p => p - 1));
+                copiedPages.forEach(page => newPdf.addPage(page));
+
+                // Save the new PDF
+                const pdfBytes = await newPdf.save();
+
+                // Download the file
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                download(blob, fileName, 'application/pdf');
+
+                statusDiv.textContent = `Successfully created new PDF with ${pages.length} pages.`;
+                statusDiv.style.backgroundColor = 'rgba(74, 222, 128, 0.1)';
+                statusDiv.style.color = 'var(--success-color)';
+            } catch (error) {
+                console.error(error);
+                statusDiv.textContent = 'Error splitting PDF: ' + error.message;
+                statusDiv.style.backgroundColor = 'rgba(244, 63, 94, 0.1)';
+                statusDiv.style.color = 'var(--danger-color)';
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>

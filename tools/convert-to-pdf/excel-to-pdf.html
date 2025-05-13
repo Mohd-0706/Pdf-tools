@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to PDF Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        /* Base Styles & Reset */
+        :root {
+            --primary-color: #f33434;
+            --primary-dark: #f36b22;
+            --secondary-color: #e6a234;
+            --text-color: #333;
+            --text-light: #666;
+            --text-dark: #111;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --border-color: #ddd;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #f33434;
+            --primary-dark: #f36b22;
+            --secondary-color: #e6a234;
+            --text-color: #f1f1f1;
+            --text-light: #ccc;
+            --text-dark: #e1e1e1;
+            --bg-light: #121212;
+            --bg-white: #1e1e1e;
+            --border-color: #444;
+            --box-shadow: 0 4px 20px rgba(255, 255, 255, 0.05);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Header */
+        .site-header {
+            background: var(--bg-white);
+            box-shadow: var(--box-shadow);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .theme-toggle i {
+            position: absolute;
+            transition: var(--transition);
+            font-size: 1.2rem;
+        }
+        
+        .theme-toggle .fa-sun {
+            opacity: 0;
+            transform: rotate(90deg);
+            color: #ffd700;
+        }
+        
+        [data-theme="dark"] .theme-toggle .fa-moon {
+            opacity: 0;
+            transform: rotate(90deg);
+        }
+        
+        [data-theme="dark"] .theme-toggle .fa-sun {
+            opacity: 1;
+            transform: rotate(0);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 3rem 0;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--bg-white);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        /* File Upload */
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            border: 2px dashed var(--primary-color);
+            border-radius: var(--border-radius);
+            background-color: rgba(243, 52, 52, 0.05);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            min-height: 200px;
+        }
+
+        .file-upload:hover {
+            background-color: rgba(243, 52, 52, 0.1);
+            border-color: var(--primary-dark);
+        }
+
+        .file-upload i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .file-upload h3 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .file-upload p {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-info {
+            margin-top: 1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        /* Settings Form */
+        .settings-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--bg-white);
+            color: var(--text-color);
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(243, 52, 52, 0.2);
+        }
+
+        /* Preview Section */
+        .preview-container {
+            margin-top: 2rem;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .preview-options {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .preview-page {
+            background: var(--bg-white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .preview-page:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .preview-page-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-page-content {
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .preview-table th, .preview-table td {
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .preview-table th {
+            background-color: rgba(243, 52, 52, 0.1);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .preview-table tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        [data-theme="dark"] .preview-table tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Progress */
+        .progress-container {
+            width: 100%;
+            background-color: var(--secondary-color);
+            border-radius: var(--border-radius);
+            margin: 2rem 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-color);
+        }
+
+        /* Messages */
+        .message {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            display: none;
+        }
+
+        .message i {
+            font-size: 1.25rem;
+        }
+
+        .error-message {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .success-message {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+            border-left: 4px solid #2ecc71;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 1rem auto;
+            border: 4px solid rgba(243, 52, 52, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .settings-form {
+                grid-template-columns: 1fr;
+            }
+
+            .action-btns {
+                flex-direction: column;
+            }
+
+            .preview-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-container">
+            <div class="logo">
+                <i class="fas fa-file-excel"></i>
+                <span>Excel to PDF</span>
+            </div>
+            <button class="theme-toggle">
+                <i class="fas fa-moon"></i>
+                <i class="fas fa-sun"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="card" data-aos="fade-up">
+                <h2 class="card-title">Upload Excel File</h2>
+                <div class="file-upload" id="dropArea">
+                    <input type="file" id="fileInput" class="file-input" accept=".xlsx, .xls" />
+                    <i class="fas fa-file-excel"></i>
+                    <h3>Drag & Drop Excel File</h3>
+                    <p>or click to browse files</p>
+                    <div class="file-info" id="fileInfo">
+                        <i class="fa-solid fa-circle-info fa-sm"></i>
+                        <span>No file selected</span>
+                    </div>
+                </div>
+                <div class="spinner" id="spinner"></div>
+                <div class="error-message message" id="errorMessage">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText"></span>
+                </div>
+                <div class="success-message message" id="successMessage">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="successText"></span>
+                </div>
+            </div>
+
+            <div class="card" id="settingsCard" style="display: none;" data-aos="fade-up">
+                <h2 class="card-title">PDF Settings</h2>
+                <form class="settings-form" id="settingsForm">
+                    <div class="form-group">
+                        <label for="pageSize">Page Size</label>
+                        <select id="pageSize">
+                            <option value="a4">A4</option>
+                            <option value="letter">Letter</option>
+                            <option value="legal">Legal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="orientation">Orientation</label>
+                        <select id="orientation">
+                            <option value="portrait">Portrait</option>
+                            <option value="landscape">Landscape</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="margin">Margin (mm)</label>
+                        <input type="number" id="margin" value="10" min="0" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="fontSize">Font Size</label>
+                        <input type="number" id="fontSize" value="10" min="6" max="20">
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" id="previewCard" style="display: none;" data-aos="fade-up">
+                <div class="preview-header">
+                    <h2 class="card-title">PDF Preview</h2>
+                    <div class="preview-options">
+                        <button class="btn btn-secondary" id="resetBtn">
+                            <i class="fas fa-redo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="preview-container" id="previewContainer"></div>
+            </div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+                <div class="progress-text" id="progressText">Processing: 0%</div>
+            </div>
+
+            <div class="action-btns">
+                <button class="btn btn-primary" id="convertBtn" disabled>
+                    <i class="fas fa-file-pdf"></i> Convert to PDF
+                </button>
+                <button class="btn btn-secondary" id="downloadBtn" disabled>
+                    <i class="fas fa-download"></i> Download PDF
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS (Animate On Scroll)
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+
+        // DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const dropArea = document.getElementById('dropArea');
+        const fileInfo = document.getElementById('fileInfo');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewCard = document.getElementById('previewCard');
+        const settingsCard = document.getElementById('settingsCard');
+        const convertBtn = document.getElementById('convertBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const successMessage = document.getElementById('successMessage');
+        const successText = document.getElementById('successText');
+        const spinner = document.getElementById('spinner');
+        const themeToggle = document.querySelector('.theme-toggle');
+
+        // Variables
+        let workbook = null;
+        let pdfDoc = null;
+        let selectedSheet = null;
+        let excelData = [];
+        let isProcessing = false;
+
+        // Event listeners
+        dropArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+        convertBtn.addEventListener('click', convertToPDF);
+        downloadBtn.addEventListener('click', downloadPDF);
+        resetBtn.addEventListener('click', resetConverter);
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Drag and drop events
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = 'var(--primary-dark)';
+            dropArea.style.backgroundColor = 'rgba(243, 52, 52, 0.1)';
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = 'var(--primary-color)';
+            dropArea.style.backgroundColor = 'rgba(243, 52, 52, 0.05)';
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = 'var(--primary-color)';
+            dropArea.style.backgroundColor = 'rgba(243, 52, 52, 0.05)';
+            
+            if (e.dataTransfer.files.length && !isProcessing) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect({ target: fileInput });
+            }
+        });
+
+        // Functions
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            
+            if (!file) return;
+            
+            // Check if already processing
+            if (isProcessing) {
+                showError('Please wait for current operation to complete');
+                return;
+            }
+            
+            // Check file type
+            if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                showError('Please select a valid Excel file (.xlsx or .xls)');
+                return;
+            }
+            
+            // Check file size (limit to 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size exceeds 10MB limit');
+                return;
+            }
+            
+            // Reset previous state
+            resetConverter(false);
+            
+            // Show file info
+            fileInfo.innerHTML = `<i class="fas fa-check-circle"></i> <span>${file.name}</span>`;
+            hideError();
+            hideSuccess();
+            
+            // Show loading spinner
+            spinner.style.display = 'block';
+            isProcessing = true;
+            
+            // Read the file
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Process the first sheet by default
+                    selectedSheet = workbook.SheetNames[0];
+                    excelData = XLSX.utils.sheet_to_json(workbook.Sheets[selectedSheet], { header: 1 });
+                    
+                    // Hide spinner
+                    spinner.style.display = 'none';
+                    isProcessing = false;
+                    
+                    // Display preview
+                    displayPreview(excelData);
+                    
+                    // Show preview and settings cards
+                    previewCard.style.display = 'block';
+                    settingsCard.style.display = 'block';
+                    
+                    // Enable convert button
+                    convertBtn.disabled = false;
+                    downloadBtn.disabled = true;
+                    
+                    showSuccess('Excel file loaded successfully');
+                } catch (error) {
+                    spinner.style.display = 'none';
+                    isProcessing = false;
+                    showError('Error reading Excel file: ' + error.message);
+                    console.error(error);
+                }
+            };
+            
+            reader.onerror = function() {
+                spinner.style.display = 'none';
+                isProcessing = false;
+                showError('Error reading file');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function displayPreview(data) {
+            if (!data || data.length === 0) {
+                previewContainer.innerHTML = '<p>No data to display</p>';
+                return;
+            }
+            
+            // Create preview HTML
+            let previewHTML = `
+                <div class="preview-grid">
+                    <div class="preview-page">
+                        <div class="preview-page-header">
+                            <span>Sheet Preview</span>
+                        </div>
+                        <div class="preview-page-content">
+                            <table class="preview-table">
+                                <thead>
+                                    <tr>`;
+            
+            // Add headers (first row)
+            for (let i = 0; i < data[0].length; i++) {
+                previewHTML += `<th>${data[0][i] || ''}</th>`;
+            }
+            previewHTML += `</tr></thead><tbody>`;
+            
+            // Add rows (limit to 10 for preview)
+            const previewRows = Math.min(data.length, 10);
+            for (let i = 1; i < previewRows; i++) {
+                previewHTML += '<tr>';
+                for (let j = 0; j < data[i].length; j++) {
+                    previewHTML += `<td>${data[i][j] || ''}</td>`;
+                }
+                previewHTML += '</tr>';
+            }
+            
+            previewHTML += `</tbody></table>`;
+            
+            if (data.length > 10) {
+                previewHTML += `<p class="preview-note">Showing first 10 rows of ${data.length}</p>`;
+            }
+            
+            previewHTML += `</div></div></div>`;
+            
+            previewContainer.innerHTML = previewHTML;
+        }
+
+        function convertToPDF() {
+            if (!excelData || excelData.length === 0) {
+                showError('No data to convert');
+                return;
+            }
+            
+            if (isProcessing) {
+                showError('Conversion already in progress');
+                return;
+            }
+            
+            try {
+                // Show progress
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                progressText.textContent = 'Processing: 0%';
+                convertBtn.disabled = true;
+                isProcessing = true;
+                
+                // Get settings
+                const pageSize = document.getElementById('pageSize').value;
+                const orientation = document.getElementById('orientation').value;
+                const margin = parseInt(document.getElementById('margin').value);
+                const fontSize = parseInt(document.getElementById('fontSize').value);
+                
+                // Initialize PDF
+                const doc = new jsPDF({
+                    orientation: orientation,
+                    unit: 'mm',
+                    format: pageSize
+                });
+                
+                // Set font
+                doc.setFont('helvetica');
+                doc.setFontSize(fontSize);
+                
+                // Prepare data for autotable
+                const headers = excelData[0].map(header => header || '');
+                const rows = excelData.slice(1).map(row => {
+                    return row.map(cell => {
+                        // Convert cells to string and handle undefined/null
+                        if (cell === undefined || cell === null) return '';
+                        return String(cell);
+                    });
+                });
+                
+                // Split data into chunks if too wide for one page
+                const maxCols = orientation === 'portrait' ? 7 : 10;
+                const totalCols = headers.length;
+                const chunks = Math.ceil(totalCols / maxCols);
+                
+                // Process each chunk
+                for (let i = 0; i < chunks; i++) {
+                    const startCol = i * maxCols;
+                    const endCol = Math.min(startCol + maxCols, totalCols);
+                    
+                    const chunkHeaders = headers.slice(startCol, endCol);
+                    const chunkRows = rows.map(row => row.slice(startCol, endCol));
+                    
+                    // Add table to PDF
+                    doc.autoTable({
+                        head: [chunkHeaders],
+                        body: chunkRows,
+                        startY: i === 0 ? margin : undefined,
+                        margin: { top: margin, right: margin, bottom: margin, left: margin },
+                        styles: { 
+                            fontSize: fontSize,
+                            cellPadding: 2,
+                            overflow: 'linebreak',
+                            valign: 'middle'
+                        },
+                        didParseCell: function(data) {
+                            // Update progress during cell parsing
+                            const progress = Math.min(99, 30 + Math.floor(70 * (data.row.index / rows.length + i) / chunks));
+                            updateProgress(progress);
+                        }
+                    });
+                    
+                    // Add new page if more chunks to process
+                    if (i < chunks - 1) {
+                        doc.addPage(pageSize, orientation);
+                    }
+                }
+                
+                // Save the PDF
+                pdfDoc = doc;
+                
+                // Complete progress
+                updateProgress(100);
+                isProcessing = false;
+                
+                // Enable download button
+                downloadBtn.disabled = false;
+                
+                showSuccess('PDF generated successfully. Click Download to save.');
+            } catch (error) {
+                isProcessing = false;
+                showError('Error generating PDF: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        function updateProgress(percent) {
+            progressBar.style.width = `${percent}%`;
+            progressText.textContent = `Processing: ${percent}%`;
+            
+            if (percent === 100) {
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, 1000);
+            }
+        }
+
+        function downloadPDF() {
+            if (!pdfDoc) {
+                showError('No PDF to download');
+                return;
+            }
+            
+            const fileName = fileInput.files[0].name.replace(/\.[^/.]+$/, '') + '.pdf';
+            pdfDoc.save(fileName);
+        }
+
+        function resetConverter(fullReset = true) {
+            if (fullReset) {
+                fileInput.value = '';
+                fileInfo.innerHTML = '<i class="fas fa-info-circle"></i> <span>No file selected</span>';
+            }
+            
+            previewContainer.innerHTML = '';
+            previewCard.style.display = 'none';
+            settingsCard.style.display = 'none';
+            progressContainer.style.display = 'none';
+            convertBtn.disabled = true;
+            downloadBtn.disabled = true;
+            spinner.style.display = 'none';
+            isProcessing = false;
+            
+            workbook = null;
+            pdfDoc = null;
+            selectedSheet = null;
+            excelData = [];
+            
+            hideError();
+            hideSuccess();
+        }
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'flex';
+            successMessage.style.display = 'none';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successText.textContent = message;
+            successMessage.style.display = 'flex';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideSuccess() {
+            successMessage.style.display = 'none';
+        }
+
+        function toggleTheme() {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        }
+
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.setAttribute('data-theme', savedTheme);
+    </script>
+</body>
+</html>
