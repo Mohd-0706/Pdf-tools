@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn More | PDF Tools Pro</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" as="style">
+
+    <!-- Favicon -->
+    <link rel="icon" href="../../assets/images/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../assets/images/apple-touch-icon.png">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            light: '#4f46e5',
+                            dark: '#7c3aed',
+                        },
+                        secondary: {
+                            light: '#10b981',
+                            dark: '#34d399',
+                        },
+                        dark: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 8s ease infinite',
+                        'gradient-y': 'gradient-y 8s ease infinite',
+                        'gradient-xy': 'gradient-xy 8s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-reverse': 'float-reverse 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            }
+                        },
+                        'gradient-y': {
+                            '0%, 100%': {
+                                'background-size': '400% 400%',
+                                'background-position': 'center top'
+                            },
+                            '50%': {
+                                'background-size': '400% 400%',
+                                'background-position': 'center bottom'
+                            }
+                        },
+                        'gradient-xy': {
+                            '0%, 100%': {
+                                'background-size': '400% 400%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '400% 400%',
+                                'background-position': 'right center'
+                            }
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        'float-reverse': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(20px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-dark-900 dark:to-dark-800 text-gray-800 dark:text-gray-200 transition-colors duration-300 overflow-x-hidden">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-dark-900 transition-opacity duration-500 hidden">
+        <div class="text-center">
+            <div class="flex items-center justify-center mb-6">
+                <i class="fas fa-file-pdf text-5xl text-primary-light dark:text-primary-dark mr-3"></i>
+                <h1 class="text-4xl font-bold">PDF Tools <span class="text-primary-light dark:text-primary-dark">Pro</span></h1>
+            </div>
+            <div class="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-auto mb-4">
+                <div id="loading-progress" class="h-full bg-gradient-to-r from-primary-light to-secondary-light dark:from-primary-dark dark:to-secondary-dark rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400">Loading your PDF solutions...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="site-header fixed w-full z-40 bg-white/80 dark:bg-dark-900/80 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-6 py-3 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="../../pages/index.html" class="flex items-center">
+                <i class="fas fa-file-pdf text-2xl text-primary-light dark:text-primary-dark mr-2"></i>
+                <div class="text-xl font-bold">PDF<span class="text-primary-light dark:text-primary-dark"> Tools</span> Pro</div>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="../../pages/index.html" class="nav-link relative group font-medium">
+                    Home
+                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-light dark:bg-primary-dark transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                
+                <div class="relative group">
+                    <button class="nav-link flex items-center font-medium">
+                        Tools
+                        <i class="fas fa-chevron-down ml-1 text-xs transition-transform duration-200 group-hover:rotate-180"></i>
+                    </button>
+                    <div class="absolute left-0 mt-2 w-96 bg-white dark:bg-dark-800 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-1 group-hover:translate-y-0 z-50 grid grid-cols-3 gap-4 p-4">
+                        <div>
+                            <h4 class="text-sm font-semibold mb-2 text-gray-500 dark:text-gray-400">Organize PDF</h4>
+                            <a href="../../tools/organizepdf/merge.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Merge PDF</a>
+                            <a href="../../tools/organizepdf/splitpdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Split PDF</a>
+                            <a href="../../tools/organizepdf/compresspdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Compress PDF</a>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold mb-2 text-gray-500 dark:text-gray-400">Convert to PDF</h4>
+                            <a href="../../tools/convert-to-pdf/jpg-to-pdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">JPG to PDF</a>
+                            <a href="../../tools/convert-to-pdf/word-to-pdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Word to PDF</a>
+                            <a href="../../tools/convert-to-pdf/excel-to-pdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Excel to PDF</a>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold mb-2 text-gray-500 dark:text-gray-400">Edit PDF</h4>
+                            <a href="../../tools/editpdf/rotate-pdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Rotate PDF</a>
+                            <a href="../../tools/editpdf/watermark.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Add Watermark</a>
+                            <a href="../../Updates/comingsoon.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Protect PDF</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="../../pages/popular-tools.html" class="nav-link relative group font-medium">
+                    Popular Tools
+                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-light dark:bg-primary-dark transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="../../pages/all-tools.html" class="nav-link relative group font-medium">
+                    All Tools
+                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-light dark:bg-primary-dark transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="../../pages/how-it-works.html" class="nav-link relative group font-medium">
+                    How It Works
+                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-light dark:bg-primary-dark transition-all duration-300 group-hover:w-full"></span>
+                </a>
+            </nav>
+
+            <!-- Right Side Controls -->
+            <div class="flex items-center space-x-4">
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <span class="dark:hidden">
+                        <i class="fas fa-moon text-gray-700"></i>
+                    </span>
+                    <span class="hidden dark:inline">
+                        <i class="fas fa-sun text-yellow-300"></i>
+                    </span>
+                </button>
+
+                <!-- Mobile Controls -->
+                <div class="md:hidden flex items-center space-x-3">
+                    <button class="mobile-menu-btn p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div id="mobile-nav" class="md:hidden fixed inset-0 bg-white dark:bg-dark-900 z-30 transform translate-x-full transition-transform duration-300 overflow-y-auto pt-16">
+            <div class="container mx-auto px-6 py-4">
+                <nav class="space-y-2">
+                    <a href="../../pages/index.html" class="block py-2 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Home</a>
+                    
+                    <div class="accordion-group">
+                        <button class="accordion-btn flex items-center justify-between w-full py-2 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                            <span>Tools</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                        </button>
+                        <div class="accordion-content overflow-hidden max-h-0 transition-all duration-300">
+                            <div class="py-2 pl-6 pr-4 space-y-1">
+                                <h4 class="text-sm font-semibold mt-2 mb-1 text-gray-500 dark:text-gray-400">Organize PDF</h4>
+                                <a href="../../tools/organizepdf/merge.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Merge PDF</a>
+                                <a href="../../tools/organizepdf/splitpdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Split PDF</a>
+                                <a href="../../tools/organizepdf/compresspdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Compress PDF</a>
+                                
+                                <h4 class="text-sm font-semibold mt-3 mb-1 text-gray-500 dark:text-gray-400">Convert to PDF</h4>
+                                <a href="../../tools/convert-to-pdf/jpg-to-pdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">JPG to PDF</a>
+                                <a href="../../tools/convert-to-pdf/word-to-pdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Word to PDF</a>
+                                <a href="../../tools/convert-to-pdf/excel-to-pdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Excel to PDF</a>
+                                
+                                <h4 class="text-sm font-semibold mt-3 mb-1 text-gray-500 dark:text-gray-400">Edit PDF</h4>
+                                <a href="../../tools/editpdf/rotate-pdf.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Rotate PDF</a>
+                                <a href="../../tools/editpdf/watermark.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Add Watermark</a>
+                                <a href="../../Updates/comingsoon.html" class="block py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Protect PDF</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="../../pages/popular-tools.html" class="block py-2 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Popular Tools</a>
+                    <a href="../../pages/all-tools.html" class="block py-2 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">All Tools</a>
+                    <a href="../../pages/how-it-works.html" class="block py-2 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">How It Works</a>
+                    <a href="../../pages/learn-more.html" class="block py-2 px-4 rounded-lg bg-gray-100 dark:bg-gray-800 text-primary-light dark:text-primary-dark font-medium">Learn More</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-16 min-h-screen">
+        <div class="container mx-auto px-6">
+            <!-- Breadcrumbs -->
+            <nav class="flex mb-8" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="../../pages/index.html" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-light dark:text-gray-400 dark:hover:text-white">
+                            <i class="fas fa-home mr-2"></i>
+                            Home
+                        </a>
+                    </li>
+                    <li aria-current="page">
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 mx-1 text-xs"></i>
+                            <span class="ml-1 text-sm font-medium text-gray-500 dark:text-gray-400">Learn More</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Page Header -->
+            <div class="text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Learn More About <span class="text-primary-light dark:text-primary-dark">PDF Tools</span></h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">Discover how to get the most out of our tools with guides, tutorials, and expert tips.</p>
+            </div>
+
+            <!-- Features Section -->
+            <section class="mb-20">
+                <div class="max-w-4xl mx-auto text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-4">Why Choose PDF Tools Pro?</h2>
+                    <p class="text-gray-600 dark:text-gray-400">Our platform offers powerful features designed to simplify your document workflow.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <div class="bg-primary-light/10 dark:bg-primary-dark/10 w-14 h-14 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <i class="fas fa-shield-alt text-primary-light dark:text-primary-dark text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 text-center">Bank-Level Security</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm text-center">All files are encrypted during transfer and automatically deleted after processing. Your documents stay private.</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <div class="bg-primary-light/10 dark:bg-primary-dark/10 w-14 h-14 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <i class="fas fa-bolt text-primary-light dark:text-primary-dark text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 text-center">Lightning Fast</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm text-center">Process documents in seconds with our optimized cloud infrastructure. No waiting, no delays.</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <div class="bg-primary-light/10 dark:bg-primary-dark/10 w-14 h-14 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <i class="fas fa-laptop-code text-primary-light dark:text-primary-dark text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 text-center">No Installation</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm text-center">Access all tools directly in your browser. Works on any device without downloading software.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tutorials Section -->
+            <section class="mb-20">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold mb-8 text-center">Video Tutorials</h2>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <div class="relative pt-[56.25%] bg-gray-200 dark:bg-gray-700">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <i class="fas fa-play text-4xl text-primary-light dark:text-primary-dark opacity-80"></i>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="font-bold text-lg mb-2">How to Merge PDF Files</h3>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">Learn how to combine multiple PDFs into a single document in just a few clicks.</p>
+                                <a href="#" class="text-primary-light dark:text-primary-dark text-sm font-medium hover:underline">Watch Tutorial</a>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <div class="relative pt-[56.25%] bg-gray-200 dark:bg-gray-700">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <i class="fas fa-play text-4xl text-primary-light dark:text-primary-dark opacity-80"></i>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="font-bold text-lg mb-2">Convert Word to PDF</h3>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">Step-by-step guide to converting Word documents while preserving formatting.</p>
+                                <a href="#" class="text-primary-light dark:text-primary-dark text-sm font-medium hover:underline">Watch Tutorial</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PDF Tips Section -->
+            <section class="mb-20">
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl font-bold mb-4">PDF Tips & Tricks</h2>
+                        <p class="text-gray-600 dark:text-gray-400">Expert advice to help you work more efficiently with PDFs.</p>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                            <h3 class="font-bold text-lg mb-3">Optimizing PDF File Size</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">Large PDF files can be difficult to share and store. Here are some techniques to reduce file size without sacrificing quality:</p>
+                            <ul class="list-disc pl-5 space-y-2 text-gray-600 dark:text-gray-400">
+                                <li>Use our PDF compression tool with the "Recommended" setting</li>
+                                <li>Remove unnecessary images or reduce their resolution</li>
+                                <li>Flatten form fields and annotations</li>
+                                <li>Remove embedded fonts not being used</li>
+                                <li>Consider splitting very large documents</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                            <h3 class="font-bold text-lg mb-3">Making PDFs Accessible</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">Accessible PDFs ensure all users, including those with disabilities, can access your content. Follow these best practices:</p>
+                            <ul class="list-disc pl-5 space-y-2 text-gray-600 dark:text-gray-400">
+                                <li>Use proper heading structure (H1, H2, etc.)</li>
+                                <li>Add alternative text to images</li>
+                                <li>Ensure proper reading order for screen readers</li>
+                                <li>Use sufficient color contrast</li>
+                                <li>Tag PDF elements properly</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                            <h3 class="font-bold text-lg mb-3">Securing Sensitive PDFs</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">When sharing confidential documents, take these precautions to protect your information:</p>
+                            <ul class="list-disc pl-5 space-y-2 text-gray-600 dark:text-gray-400">
+                                <li>Use password protection with strong passwords</li>
+                                <li>Set permissions to restrict printing or editing</li>
+                                <li>Redact sensitive information completely</li>
+                                <li>Add watermarks to indicate confidentiality</li>
+                                <li>Consider expiration dates for time-sensitive documents</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Comparison Section -->
+            <section class="mb-20">
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+                        <h2 class="text-2xl font-bold mb-6 text-center">Free vs. Pro Features</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                                        <th class="text-left py-3 px-4 font-semibold">Feature</th>
+                                        <th class="text-center py-3 px-4 font-semibold">Free</th>
+                                        <th class="text-center py-3 px-4 font-semibold">Pro</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                    <tr>
+                                        <td class="py-3 px-4">File Size Limit</td>
+                                        <td class="text-center py-3 px-4">50MB</td>
+                                        <td class="text-center py-3 px-4">2GB</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4">Batch Processing</td>
+                                        <td class="text-center py-3 px-4"><i class="fas fa-times text-red-500"></i></td>
+                                        <td class="text-center py-3 px-4"><i class="fas fa-check text-green-500"></i></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4">Priority Support</td>
+                                        <td class="text-center py-3 px-4"><i class="fas fa-times text-red-500"></i></td>
+                                        <td class="text-center py-3 px-4"><i class="fas fa-check text-green-500"></i></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4">Advanced OCR</td>
+                                        <td class="text-center py-3 px-4"><i class="fas fa-times text-red-500"></i></td>
+                                        <td class="text-center py-3 px-4"><i class="fas fa-check text-green-500"></i></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4">Cloud Storage</td>
+                                        <td class="text-center py-3 px-4">-</td>
+                                        <td class="text-center py-3 px-4">10GB</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4">API Access</td>
+                                        <td class="text-center py-3 px-4"><i class="fas fa-times text-red-500"></i></td>
+                                        <td class="text-center py-3 px-4"><i class="fas fa-check text-green-500"></i></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA Section -->
+            <section class="bg-gradient-to-r from-primary-light to-secondary-light dark:from-primary-dark dark:to-secondary-dark rounded-2xl p-8 md:p-12 text-center text-white">
+                <h2 class="text-3xl font-bold mb-4">Ready to Master PDF Tools?</h2>
+                <p class="text-lg mb-8 max-w-2xl mx-auto opacity-90">Join thousands of users who have transformed their document workflows.</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="../../pages/all-tools.html" class="inline-block bg-white text-primary-light dark:text-primary-dark font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
+                        Explore All Tools
+                    </a>
+                    <a href="../../pages/contact.html" class="inline-block border-2 border-white text-white font-bold py-3 px-8 rounded-lg hover:bg-white/10 transition-colors shadow-lg">
+                        Get Help
+                    </a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-dark-900 border-t border-gray-200 dark:border-gray-800 pt-16 pb-8">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-file-pdf text-2xl text-primary-light dark:text-primary-dark mr-2"></i>
+                        <div class="text-xl font-bold">PDF<span class="text-primary-light dark:text-primary-dark"> Tools</span> Pro</div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Your all-in-one solution for PDF management. Simple, secure, and powerful tools for everyone.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-500 hover:text-primary-light dark:hover:text-primary-dark transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary-light dark:hover:text-primary-dark transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary-light dark:hover:text-primary-dark transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary-light dark:hover:text-primary-dark transition-colors">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Tools</h3>
+                    <ul class="space-y-2">
+                        <li><a href="../../tools/organizepdf/merge.html" class="text-gray-600 hover:text-primary-light dark:text-gray-400 dark:hover:text-primary-dark transition-colors">Merge PDF</a></li>
+                        <li><a href="../../tools/organizepdf/splitpdf.html" class="text-gray-600 hover:text-primary-light dark:text-gray-400 dark:hover:text-primary-dark transition-colors">Split PDF</a></li>
+                        <li><a href="../../tools/convert-to-pdf/jpg-to-pdf.html" class="text-gray-600 hover:text-primary-light dark:text-gray-400 dark:hover:text-primary-dark transition-colors">JPG to PDF</a></li>
+                        <li><a href="../../tools/convert-to-pdf/word-to-pdf.html" class="text-gray-600 hover:text-primary-light dark:text-gray-400 dark:hover:text-primary-dark transition-colors">Word to PDF</a></li>
+                        <li><a href="../../tools/editpdf/watermark.html" class="text-gray-600 hover:text-primary-light dark:text-gray-400 dark:hover:text-primary-dark transition-colors">Add Watermark</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Company</h3>
+                    <ul class="space-y-2">
+                        <li><a href="../../pages/about.html" class="text-gray-600 hover:text-primary-light dark:text-gray-400 dark:hover:text-primary-dark transition-colors">About Us</a></li>
+                        <li><a href="../../pages/how-it-works.html" class="text-gray-600 hover:text-primary-light dark:text-gray-400 dark:hover:text-primary-dark transition-colors">How It Works</a></li>
+                        <li><a href="../../pages/privacy-policy.html" class="text-gray-600 hover:text-primary-light dark:text-gray-400 dark:hover:text-primary-dark transition-colors">Privacy Policy</a></li>
+                        <li><a href="../../pages/terms-of-service.html" class="text-gray-600 hover:text-primary-light dark:text-gray-400 dark:hover:text-primary-dark transition-colors">Terms of Service</a></li>
+                        <li><a href="../../pages/contact.html" class="text-gray-600 hover:text-primary-light dark:text-gray-400 dark:hover:text-primary-dark transition-colors">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Subscribe</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Get the latest updates and new tools directly to your inbox.</p>
+                    <form class="flex">
+                        <input type="email" placeholder="Your email" class="px-4 py-2 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-700 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark w-full">
+                        <button type="submit" class="bg-primary-light dark:bg-primary-dark text-white px-4 py-2 rounded-r-lg hover:bg-opacity-90 transition-colors">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 dark:text-gray-400 mb-4 md:mb-0">© 2023 PDF Tools Pro. All rights reserved.</p>
+                <div class="flex space-x-6">
+                    <a href="../../pages/privacy-policy.html" class="text-gray-500 hover:text-primary-light dark:hover:text-primary-dark transition-colors">Privacy Policy</a>
+                    <a href="../../pages/terms-of-service.html" class="text-gray-500 hover:text-primary-light dark:hover:text-primary-dark transition-colors">Terms of Service</a>
+                    <a href="../../pages/contact.html" class="text-gray-500 hover:text-primary-light dark:hover:text-primary-dark transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-primary-light dark:bg-primary-dark text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 hover:bg-opacity-90">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script src="../../assets/js/main.js"></script>
+    <script>
+        // Loading screen animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingScreen = document.getElementById('loading-screen');
+            const loadingProgress = document.getElementById('loading-progress');
+            
+            if (loadingScreen && loadingProgress) {
+                loadingScreen.classList.remove('hidden');
+                
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 100) progress = 100;
+                    loadingProgress.style.width = `${progress}%`;
+                    
+                    if (progress === 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            loadingScreen.style.opacity = '0';
+                            setTimeout(() => {
+                                loadingScreen.style.display = 'none';
+                            }, 500);
+                        }, 300);
+                    }
+                }, 200);
+            }
+        });
+    </script>
+</body>
+</html>

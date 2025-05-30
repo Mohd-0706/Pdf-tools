@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#e75c5c',
+                        secondary: '#fead9b',
+                        dark: '#2d3436',
+                        light: '#f5f6fa',
+                        accent: '#ee4040',
+                        glass: 'rgba(255, 255, 255, 0.1)',
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px rgba(0, 0, 0, 0.3)',
+                    },
+                    fontFamily: {
+                        montserrat: ['Montserrat', 'sans-serif'],
+                    },
+                    animation: {
+                        float: 'float linear infinite',
+                        blink: 'blink 0.7s infinite',
+                        pulse: 'pulse 2s ease-in-out infinite',
+                        'float-icon': 'float-icon 3s ease-in-out infinite',
+                        glow: 'glow-animation 8s ease infinite',
+                        rotate: 'rotate 20s linear infinite',
+                        progress: 'progress-animation 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%': { transform: 'translateY(0) translateX(0) rotate(0deg)', opacity: '1' },
+                            '100%': { transform: 'translateY(-100vh) translateX(100px) rotate(360deg)', opacity: '0' },
+                        },
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' },
+                        },
+                        pulse: {
+                            '0%, 100%': { transform: 'scale(1)', textShadow: '0 0 10px rgba(253, 121, 168, 0.5)' },
+                            '50%': { transform: 'scale(1.1)', textShadow: '0 0 20px rgba(253, 121, 168, 0.8)' },
+                        },
+                        'float-icon': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        'glow-animation': {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                            '100%': { backgroundPosition: '0% 50%' },
+                        },
+                        rotate: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                        },
+                        'progress-animation': {
+                            '0%': { width: '0', left: '0' },
+                            '50%': { width: '100%', left: '0' },
+                            '100%': { width: '0', left: '100%' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .bg-glass {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .text-gradient {
+                background: linear-gradient(90deg, #f5f6fa, #fead9b, #ee4040);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+                background-size: 200% 200%;
+            }
+            .particle {
+                background: rgba(255, 255, 255, 0.5);
+                border-radius: 50%;
+                filter: blur(1px);
+            }
+            .progress-bar {
+                background: linear-gradient(90deg, #e75c5c, #ee4040);
+            }
+            .radial-bg::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle, rgba(108, 92, 231, 0.1) 0%, transparent 70%);
+                z-index: -1;
+            }
+        }
+    </style>
+</head>
+<body class="font-montserrat bg-gradient-to-br from-[#1e1e2f] to-[#2d2d42] text-light min-h-screen overflow-x-hidden relative">
+    <!-- Animated Particles -->
+    <div class="particles fixed top-0 left-0 w-full h-full z-[-1] overflow-hidden" id="particles"></div>
+
+    <!-- Main Content -->
+    <div class="container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[800px] p-12 bg-glass rounded-2xl shadow-glass text-center z-10 overflow-hidden radial-bg md:p-8 sm:w-[95%] sm:p-6">
+        <i class="fas fa-tools text-accent text-6xl mb-8 animate-[pulse_2s_ease-in-out_infinite,float-icon_3s_ease-in-out_infinite] md:text-5xl"></i>
+        <div class="message text-[clamp(1.5rem,4vw,3rem)] font-semibold mb-8 h-[1.2em] flex justify-center items-center">
+            <span class="typing relative text-gradient animate-glow" id="typing-text"></span>
+        </div>
+        <p class="mb-4 opacity-80">We're working hard to bring you something amazing</p>
+        <div class="status mt-8 h-1.5 bg-white/10 rounded-full overflow-hidden relative">
+            <div class="progress-bar absolute top-0 left-0 h-full rounded-full w-0 animate-progress"></div>
+        </div>
+    </div>
+
+    <script>
+        // Typewriter Effect
+        const text = "This tool will be implemented soon...";
+        const typingElement = document.getElementById('typing-text');
+        let i = 0;
+        
+        function typeWriter() {
+            if (i < text.length) {
+                typingElement.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 100);
+            } else {
+                setTimeout(() => {
+                    typingElement.innerHTML = '';
+                    i = 0;
+                    typeWriter();
+                }, 2000);
+            }
+        }
+        
+        // Create Particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = window.innerWidth < 768 ? 30 : 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle', 'absolute', 'animate-float');
+                
+                // Random properties
+                const size = Math.random() * 10 + 5;
+                const posX = Math.random() * window.innerWidth;
+                const posY = Math.random() * window.innerHeight + window.innerHeight;
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 10;
+                const opacity = Math.random() * 0.5 + 0.1;
+                
+                // Apply styles
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}px`;
+                particle.style.top = `${posY}px`;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                particle.style.opacity = opacity;
+                
+                // Random shape (circle or square)
+                if (Math.random() > 0.7) {
+                    particle.style.borderRadius = '0';
+                }
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            typeWriter();
+            createParticles();
+        });
+    </script>
+</body>
+</html>
